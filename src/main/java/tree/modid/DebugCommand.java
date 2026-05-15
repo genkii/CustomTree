@@ -270,9 +270,12 @@ public final class DebugCommand {
      * Sends a styled chat message to the command source.
      * Uses legacy §-codes because they are already embedded in all call sites;
      * the vanilla client renders them correctly.
+     *
+     * <p>{@code broadcastToOps = false}: debug output should only go to the player
+     * who ran the command, not to every online operator.
      */
     private static void send(CommandSourceStack src, String text) {
-        src.sendSuccess(() -> Component.literal(text), true);
+        src.sendSuccess(() -> Component.literal(text), false);
     }
 
     /**

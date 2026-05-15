@@ -12,9 +12,12 @@ import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
+
     public LivingEntityMixin(EntityType<?> entityType, Level level) {
         super(entityType, level);
     }
@@ -22,9 +25,42 @@ public abstract class LivingEntityMixin extends Entity {
     @Unique
     private boolean blockedHit = false;
 
-    @WrapOperation(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;applyItemBlocking(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)F"))
-    private float hurtServer(LivingEntity instance, ServerLevel serverLevel, DamageSource damageSource, float damageAmount, Operation<Float> original) {
-        float blockedAmount = original.call(instance, serverLevel, damageSource, damageAmount);
+    /**
+     * BUG-03 fix: reset {@code blockedHit} to {@code false} at the very start of every
+     * {@code hurtServer} call so that a stale {@code true} from a previous blocked hit
+     * cannot leak into the return-value modifier when {@code applyItemBlocking} is never
+     * reached (e.g. early-return due to invulnerability or death).
+     */
+    @Inject(method = "hurtServer", at = @At("HEAD"))
+    private void resetBlockedHitFlag(
+        ServerLevel serverLevel,
+        DamageSource damageSource,
+        float damageAmount,
+        CallbackInfoReturnable<Boolean> cir
+    ) {
+        blockedHit = false;
+    }
+
+    @WrapOperation(
+        method = "hurtServer",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/LivingEntity;applyItemBlocking(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)F"
+        )
+    )
+    private float hurtServer(
+        LivingEntity instance,
+        ServerLevel serverLevel,
+        DamageSource damageSource,
+        float damageAmount,
+        Operation<Float> original
+    ) {
+        float blockedAmount = original.call(
+            instance,
+            serverLevel,
+            damageSource,
+            damageAmount
+        );
         blockedHit = blockedAmount != 0.0F;
         return blockedAmount;
     }

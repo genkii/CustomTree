@@ -63,12 +63,24 @@ public final class TreeMatchers {
     // =========================================================================
 
     /**
-     * Regular (short) oak – {@link BlobFoliagePlacer} + {@code oak_log} trunk.
-     * Does NOT match the fancy/large oak variant; see {@link #FANCY_OAK}.
+     * Regular (short) oak – {@link BlobFoliagePlacer} + {@code oak_log} trunk +
+     * {@code ignoreVines == true}.
+     *
+     * <p>Does NOT match the fancy/large oak variant; see {@link #FANCY_OAK}.
+     *
+     * <p><b>ignoreVines guard</b>: swamp oak ({@code SWAMP_OAK_TREE} feature) shares
+     * the same {@link BlobFoliagePlacer} and {@code oak_log} trunk but has
+     * {@code ignoreVines = false}.  Without the guard a swamp-oak world-gen tree
+     * would match <em>both</em> {@code OAK} and {@code SWAMP}, polluting the
+     * weighted pool with all plain-oak NBTs when only swamp-oak NBTs should be used.
+     * The guard restricts this matcher to the {@code ignoreVines = true} case, leaving
+     * swamp oaks exclusively to {@link #SWAMP}.
      */
     public static final Predicate<TreeConfiguration> OAK = byFoliage(
         BlobFoliagePlacer.class
-    ).and(byTrunkBlock(Blocks.OAK_LOG));
+    )
+        .and(byTrunkBlock(Blocks.OAK_LOG))
+        .and(config -> config.ignoreVines);
 
     /**
      * Fancy / tall oak – {@link FancyFoliagePlacer} uniquely identifies this

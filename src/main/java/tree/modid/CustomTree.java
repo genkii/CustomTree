@@ -15,7 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.feature.HugeFungusConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -779,17 +778,17 @@ public class CustomTree implements ModInitializer {
         // birch in forest and flower_forest biomes.  Normal birch (birchtree1-18)
         // is excluded from those two biomes, so these are the sole birch trees
         // that appear there during world-gen and sapling growth.
-        // NBT files: forestbrich1.nbt, forestbrich2.nbt, forestbirch3.nbt, forestbirch4.nbt
+        // NBT files: forestbirch1.nbt, forestbirch2.nbt, forestbirch3.nbt, forestbirch4.nbt
 
         registerTree(
-            "forestbrich1",
+            "forestbirch1",
             Blocks.BIRCH_SAPLING,
             TreeMatchers.BIRCH,
             9,
             BiomeMatchers.any(BiomeMatchers.FOREST, BiomeMatchers.FLOWER_FOREST)
         );
         registerTree(
-            "forestbrich2",
+            "forestbirch2",
             Blocks.BIRCH_SAPLING,
             TreeMatchers.BIRCH,
             9,
@@ -1791,6 +1790,20 @@ public class CustomTree implements ModInitializer {
                     context
                         .server()
                         .execute(() -> {
+                            // BUG-02 fix: require operator level 2 so any non-op client
+                            // cannot send this packet to give themselves arbitrary items.
+                            if (
+                                !context
+                                    .player()
+                                    .createCommandSourceStack()
+                                    .permissions()
+                                    .hasPermission(
+                                        net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER
+                                    )
+                            ) {
+                                return;
+                            }
+
                             var optional = BuiltInRegistries.ITEM.get(
                                 payload.itemId
                             );
@@ -1814,8 +1827,10 @@ public class CustomTree implements ModInitializer {
                 }
             );
 
-            GameRules rules = server.getGameRules();
-            rules.set(GameRules.LOG_ADMIN_COMMANDS, false, server);
+            // BUG-06 fix: removed forced "logAdminCommands = false" that was here.
+            // Silently disabling admin-command logging on every server start overrides
+            // server-operator configuration and removes the audit trail for admin commands.
+            // Server operators are free to manage this gamerule through normal means.
         });
     }
 
