@@ -103,8 +103,12 @@ public class HugeMushroomFeatureMixin {
             cir.setReturnValue(false);
             return;
         }
-        // (2) Natural ground only.
-        if (!groundState.is(BlockTags.DIRT)) {
+        // (2) Natural ground only: dirt-family blocks OR mycelium.
+        // NOTE: mycelium is NOT in #minecraft:dirt, but it IS the primary
+        // surface of mushroom_fields and must be accepted here.
+        if (
+            !groundState.is(BlockTags.DIRT) && !groundState.is(Blocks.MYCELIUM)
+        ) {
             cir.setReturnValue(false);
             return;
         }
