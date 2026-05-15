@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "custom-tree",
+  "version": "${version}",
+  "name": "Custom Tree",
+  "description": "Replaces vanilla world-generation trees with detailed custom NBT structures for a more varied and natural-looking overworld.",
+  "authors": ["_genki_"],
+  "contact": {
+    "sources": "https://modrinth.com/mod/custom-tree"
+  },
+  "license": "ARR",
+  "icon": "assets/custom-tree/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["tree.modid.CustomTree"],
+    "client": ["tree.modid.client.CustomTreeClient"]
+  },
+  "mixins": [
+    "custom-tree.mixins.json",
+    {
+      "config": "custom-tree.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "minecraft": "~26.1.2",
+    "java": ">=21",
+    "fabric-api": ">=0.141.3"
+  }
+}
