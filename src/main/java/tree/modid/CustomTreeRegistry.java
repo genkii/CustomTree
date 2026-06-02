@@ -101,17 +101,25 @@ public final class CustomTreeRegistry {
      *
      * <p>Empty when no definition covers this sapling in this biome.
      */
+    // DISABLED: Saplings should not create custom trees – only world-gen should.
+    // To re-enable sapling growth, uncomment the commented code below and remove
+    // the active "return new ArrayList<>()" line.
     public static List<CustomTreeDefinition> findAllBySapling(
         Block block,
         Holder<Biome> biome
     ) {
-        List<CustomTreeDefinition> result = new ArrayList<>();
-        for (CustomTreeDefinition def : DEFINITIONS) {
-            if (def.matchesSapling(block) && def.matchesBiome(biome)) {
-                result.add(def);
-            }
-        }
-        return result;
+        // === COMMENTED OUT: Re-enable by uncommenting this block ===
+        // List<CustomTreeDefinition> result = new ArrayList<>();
+        // for (CustomTreeDefinition def : DEFINITIONS) {
+        //     if (def.matchesSapling(block) && def.matchesBiome(biome)) {
+        //         result.add(def);
+        //     }
+        // }
+        // return result;
+        // === END COMMENTED OUT ===
+
+        // Active: Always return empty list (no sapling growth)
+        return new ArrayList<>();
     }
 
     /**
