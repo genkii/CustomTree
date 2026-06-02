@@ -6,6 +6,9 @@
 name: build
 on: [pull_request, push]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -33,6 +36,8 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
